@@ -1,52 +1,59 @@
-# AfyaPlus: Cost-Optimised AI Deployment
+# AfyaPlus | Cost-Optimised AI Deployment
 
-**Decision brief | October 2026 | Planning estimate, USD**
+**Executive decision brief | October 2026 | USD planning estimates**
 
-## Recommendation
+## Decision: Conditional Go
 
-Retain a managed model API for the pilot and route eligible low-risk work to
-`gpt-4o-mini`. Keep high-risk or ambiguous clinical cases on the existing
-human-review path. Do not commit to GPU self-hosting at this traffic level.
+**GO** for a small, human-reviewed pilot on the managed API path. **NO-GO** for
+autonomous clinical decisions or a production 10x launch until the budget,
+service-level target, current provider rates, and safety checks below pass.
+The locally runnable API is a deterministic clinic-catalog fallback; it does
+not call a live model provider.
 
-## Unit economics
+## Cost and spike plan
 
-| Scenario | Requests/month | Total/1,000 | Monthly total |
+| Workload | Monthly requests | Total / 1,000 | Monthly estimate |
 | --- | ---: | ---: | ---: |
 | Baseline | 100,000 | $5.3790 | $537.90 |
-| Sustained 10x | 1,000,000 | $0.9790 | $979.01 |
+| Sustained 10x scenario | 1,000,000 | $0.9790 | $979.01 |
 
-The API token portion is $0.17901 per 1,000 under the 450-input / 180-output
-token shape and 2% retry allowance. The rest is explicit infrastructure and
-allocated people/ops planning assumptions, not a cloud quote. Rates still need
-confirmation against the current OpenRouter route price.
+At 10x, estimated monthly spend is $979.01 against the proposed $1,000 alert
+budget, leaving only $20.99 of modeled headroom. This is not a guarantee of
+capacity: use a staged traffic ramp, maximum concurrency, provider quotas, and
+a queue for non-urgent work. Pause the ramp if projected spend exceeds budget,
+error/retry rates rise, or the latency target is missed.
 
-## Operating choices
+The model assumes 450 input tokens, 180 output tokens, a 2% retry allowance,
+and inherited `gpt-4o-mini` rates that must be verified. Infrastructure and
+people/operations costs are scenario allocations, not cloud quotes.
 
-- **Scale:** 10x monthly volume raises estimated total monthly spend by 1.82x
-  under the assumed platform allocations. It does not prove 10x capacity or
-  latency; validate throughput, quotas, and p95 SLOs before launch.
-- **Cache:** public FAQ fixtures produced a 62.5% hit rate (5/8) and reduced
-  estimated token spend by 62.5%. TTL is five minutes. Never generalize this
-  to patient-specific triage; the cache only accepts allow-listed FAQ IDs.
-- **Batch:** group noninteractive work behind a queue and completion deadline.
-  The local worker grouped 7 mock jobs into 2 batches; no provider discount or
-  production throughput is claimed.
-- **Controls:** proposed $1,000 monthly alert budget, 80% and 100% actual-spend
-  notices, and a 100% forecast notice. Apply cost-center, environment, and
-  workload tags. Alerts do not automatically stop spend. Bound autoscaling by
-  quotas and use capped retries/circuit breakers to contain provider failures.
-- **Fallback:** no paid cloud, Redis, GPU, Kubernetes, or live load test is
-  claimed. Local Docker Compose and written Azure/AWS budget examples are the
-  submission path; use fixtures before any paid-key test.
+## Two measured levers
 
-## Trade-off
+- **Public FAQ cache:** on 8 sample questions, 5 were served from cache (62.5%);
+  estimated token cost fell from $0.17901 to $0.06713 per 1,000 requests. Cached
+  answers expire after five minutes.
+  All 8 cached answers matched their fixture source; that is not a medical
+  quality or safety evaluation. Do not cache patient-specific answers.
+- **Offline batch queue:** grouped 7 local jobs into 2 groups, 71.4% fewer
+  work groups. This is a local processing measurement only; no bulk-pricing discount,
+  production throughput, or latency gain is claimed.
 
-Managed API deployment minimizes fixed serving and model-operations burden but
-leaves per-token prices, quotas, and availability with the provider. The
-self-host break-even is approximately 15.25M requests/month under the
-illustrative $1/hour GPU plus 40 hours/month of model operations; this is a
-planning threshold, not a procurement result. Confirm rates, load behavior,
-quality, and staff effort before scaling. Serverless cold starts, prompt
-compression, and any model/prompt A/B must be evaluated against p95 latency and
-safety quality. Quantization, pruning, and KV-cache tuning are self-hosted
-levers and are not claimed as API savings.
+## Risk, controls, and conditions
+
+**Main risk:** demand or retries push spend past the cap while slowing responses.
+Mitigate with $1,000/month budget notices at 80% actual ($800), 100% actual
+($1,000), and 100% forecast; tag cost center, environment, and workload; cap
+concurrency/retries; use a circuit breaker; and route uncertainty to human
+review. These alerts notify operators; they do not stop spend automatically.
+
+The interactive target is p95 below 2 seconds. **p95** means 95 out of 100
+requests finish within that time. Before expanding traffic, verify the current
+API rate, demonstrate that p95 and safety quality hold under a controlled load
+test, and keep fallback behavior available. No paid cloud, Redis, GPU, or live
+10x test was used; local Docker Compose, in-memory fixtures, and config-only
+Azure/AWS budgets are the declared fallbacks.
+
+**Recommendation:** pilot with these controls; do not approve autonomous
+clinical use or claim 10x readiness until the conditions above are evidenced.
+Full assumptions: [`cost/cost_model.md`](../cost/cost_model.md) and
+[`memo/api_vs_selfhost.md`](../memo/api_vs_selfhost.md).

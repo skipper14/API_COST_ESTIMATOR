@@ -1,48 +1,93 @@
-# API_COST_ESTIMATOR
+# Week 7, Cost-Optimised AI Deployment
 
-Cost-optimised deployment study for the AfyaPlus AI API. The capstone compares
-managed API spend at baseline and sustained 10x traffic, adds cache and batch
-fixtures, and documents deployment controls and the API-vs-self-host trade-off.
+## Overview
 
-## Executive decision
+This capstone estimates managed-API costs for AfyaPlus text intake at 100,000
+requests/month and a sustained 10x scenario of 1,000,000 requests/month. The
+estimated fully allocated cost is **$5.3790 per 1,000 requests at baseline**
+and **$0.9790 per 1,000 at 10x**; token, infrastructure, and people/operations
+costs are separated. These are planning estimates, not bills or capacity tests.
 
-Use the managed model API for the pilot and defer GPU self-hosting. At the
-stated assumptions, total TCO is **$5.3790 per 1,000 requests / $537.90 per
-month** at 100,000 monthly requests, and **$0.9790 per 1,000 / $979.01 per
-month** at a sustained 1,000,000 requests. Token spend is only one part of the
-estimate; infrastructure and allocated people/ops are shown separately.
+## Cost model
 
-These are scenario estimates, not measured bills or cloud quotes. The
-`gpt-4o-mini` token rates are inherited exercise inputs and must be checked
-against current OpenRouter pricing before use in a budget. Infrastructure,
-labor, retries, and traffic shape are explicit editable assumptions in
-[`cost/cost_model.md`](cost/cost_model.md).
+See [cost/cost_model.md](cost/cost_model.md) for the calculation, sensitivity
+runner, and rate references. Token prices are inherited exercise inputs, not
+confirmed current OpenRouter rates; verify them before budgeting. Token shape,
+2% retry allowance, infrastructure, and labor inputs are stated in the model.
 
-## Repository layout
+## Deploy & budgets
 
-```text
-api/                         Unchanged Week 6 FastAPI + Docker spine
-cost/cost_model.py           Token-cost arithmetic
-cost/sensitivity.py          Baseline, 10x, cache, and token sensitivities
-cost/cost_model.md            Assumptions, rates, and cost narrative
-deploy/docker-compose.cost.yml
-deploy/azure_budget_triage.json
-deploy/aws_budget.json
-deploy/budget_alert_notes.md
-levers/cache_triage.py        TTL cache for allow-listed public FAQ IDs only
-levers/cache_hitrate.py       Fixture replay and before/after cost evidence
-levers/batch_worker.py        Offline mock batch worker
-levers/batch_vs_interactive.py Interactive SLO vs batch completion deadline
-levers/measurements.md        Reproducible fixture measurements
-memo/api_vs_selfhost.md       Break-even assumptions and decision gates
-exec/one_pager.pdf            Executive one-pager
-exec/one_pager.md             One-pager source
-exec/build_one_pager.py       Rebuild the PDF
-```
+Local run: install [requirements.txt](requirements.txt), set a development
+`JWT_SECRET`, then run `docker compose -f deploy/docker-compose.cost.yml up
+--build`. The service binds to loopback with 1 CPU and 512 MiB limits. FinOps
+labels are `CostCenter=afyaplus-ai-platform`, `Environment=capstone`, and
+`Workload=triage-api`.
 
-## Reproduce locally
+The [Azure](deploy/azure_budget_triage.json) and
+[AWS](deploy/aws_budget.json) examples set a **$1,000 monthly budget** with
+notices at $800 actual, $1,000 actual, and $1,000 forecast. These are
+config-as-submitted, not deployed cloud budgets; alerts notify but do not stop
+spend. [Deployment notes](deploy/budget_alert_notes.md) contain local run
+evidence and scope/secret guidance.
 
-Python 3.10+ is required. From the repository root:
+## Levers implemented
+
+1. [Public FAQ TTL cache](levers/cache_triage.py): on 8 public fixture IDs,
+	 5 HITs / 3 MISSes (62.5% hit rate); estimated token cost changes from
+	 $0.17901 to $0.06713 per 1,000 requests. All 8 answers match their exact
+	 source fixtures, which is not independent clinical-quality evidence.
+2. [Offline FIFO batch queue](levers/batch_worker.py): 7 fixture jobs move from
+	 7 one-job groups to 2 groups (71.4% fewer groups). No provider calls,
+	 provider discount, p95, or throughput gain is claimed.
+
+Detailed [before/after measurements and quality caveats](levers/measurements.md)
+include cache MISS/HIT output and replay commands. The cache only accepts
+allow-listed public FAQ IDs; no patient-specific answers are cached. The
+in-memory queue is not durable across process failure.
+
+## API vs self-host memo
+
+See [memo/api_vs_selfhost.md](memo/api_vs_selfhost.md). Decision summary:
+
+- Managed API is recommended for the pilot; at the modeled rates it costs
+	$179.01/month in tokens at 1M requests, before the separately allocated API
+	infrastructure and people/ops.
+- A hypothetical $2,730/month self-host serving floor crosses API token spend
+	near 15.25M requests/month; omitted GPU capacity and operations costs push
+	that threshold higher.
+- No GPU or open model was run. Treat break-even as a screening estimate until
+	provider prices, workload throughput, quality, and a regional GPU quote are
+	measured.
+
+## Executive one-pager
+
+Read the one-page [executive brief PDF](exec/one_pager.pdf) or its
+[source](exec/one_pager.md). Recommendation: **conditional GO** for a small,
+human-reviewed pilot. **NO-GO** for autonomous clinical use or a production 10x
+launch until the $1,000/month budget controls are active, current model rates
+are verified, interactive p95 is below 2 seconds under controlled load, safety
+quality passes, and the local fallback is available. p95 means 95 out of 100
+requests finish within the stated time.
+
+## Fallbacks declared
+
+- [x] Redis unavailable/not used; use in-memory dictionary cache with 300-second TTL.
+- [x] GPU unavailable/not used; no quantization smoke test claimed.
+- [x] Paid cloud unavailable/not used; local Compose plus Azure/AWS budget configs.
+- [x] Live model API/load tests not run; deterministic fixtures avoid paid calls.
+- [x] Single-repository evidence index: [terminal evidence](evidence/deliverable_evidence.md).
+
+## Checklist
+
+- [x] $/1k at baseline and stated 10x scenario: [cost model](cost/cost_model.md).
+- [x] Budget threshold and local run evidence: [deployment notes](deploy/budget_alert_notes.md).
+- [x] Two implemented levers with before/after metrics: [measurements](levers/measurements.md).
+- [x] Heuristic/cache quality limits and fallback status stated honestly.
+- [ ] Executive language reviewed by a non-author classmate; review is not yet recorded.
+
+## Reproduce
+
+Run from the repository root using Python 3.10+:
 
 ```bash
 python3 -m pip install -r requirements.txt
@@ -52,39 +97,3 @@ python3 -m levers.cache_hitrate
 python3 -m levers.batch_worker --batch-size 4
 python3 exec/build_one_pager.py
 ```
-
-The API has its own dependencies and instructions in [`api/README.md`](api/README.md).
-To validate the cost-labelled local Compose deployment, set a development
-`JWT_SECRET` and run:
-
-```bash
-export JWT_SECRET='replace-with-a-local-development-secret'
-docker compose -f deploy/docker-compose.cost.yml config
-docker compose -f deploy/docker-compose.cost.yml up --build
-```
-
-## Deployment and cost controls
-
-The local API fallback uses the existing Week 6 JWT-protected FastAPI service,
-bound to loopback with CPU/memory limits and cost-identification labels. Azure
-and AWS budget files are example alert configurations for a proposed
-$1,000/month cap, not deployed budgets. Replace contact placeholders and
-confirm scope before applying them. Alerts do not stop spend automatically.
-
-No paid cloud account, Redis, GPU, Kubernetes cluster, live load test, or live
-OpenRouter call is claimed. The eight-query public FAQ fixture replay yielded
-5 cache hits (62.5%), estimated token spend of $0.17901 to $0.06712875 per
-1,000, and 8/8 exact fixture-source matches. This is not clinical quality
-evidence. The in-memory queue grouped 7 jobs into 2 local batches (71.4% fewer
-groups), with no provider calls or batch discount claimed. See the detailed
-[measurements](levers/measurements.md) for limitations and quality notes.
-
-## Local deployment evidence
-
-On 2026-10-11 the Compose image built successfully; the container became
-healthy on `127.0.0.1:8000` with a 1 CPU quota and 512 MiB memory limit. Python
-checks returned `GET /health: 200` and an authenticated `POST /agent/ask: 200`
-using the local clinic catalog. The endpoint is a deterministic MCP-backed
-fallback, not a live OpenRouter model call. Docker labels match the cloud
-`CostCenter`, `Environment`, and `Workload` tags. Full commands and response
-evidence are in [deploy/budget_alert_notes.md](deploy/budget_alert_notes.md).

@@ -42,9 +42,9 @@ def build_pdf() -> None:
         ParagraphStyle(
             name="Compact",
             parent=styles["BodyText"],
-            fontSize=8.3,
-            leading=11,
-            spaceAfter=4,
+            fontSize=7.8,
+            leading=9.5,
+            spaceAfter=3,
         )
     )
     styles.add(
@@ -71,12 +71,13 @@ def build_pdf() -> None:
     )
     story = [
         Paragraph("AfyaPlus | Cost-Optimised AI Deployment", styles["BriefTitle"]),
-        Paragraph("EXECUTIVE DECISION BRIEF &nbsp; | &nbsp; OCTOBER 2026 &nbsp; | &nbsp; USD PLANNING ESTIMATE", styles["Deck"]),
-        Paragraph("Recommendation", styles["Section"]),
+        Paragraph("EXECUTIVE DECISION BRIEF &nbsp; | &nbsp; OCTOBER 2026 &nbsp; | &nbsp; USD PLANNING ESTIMATES", styles["Deck"]),
+        Paragraph("Conditional GO: human-reviewed pilot", styles["Section"]),
         Paragraph(
-            "Keep a managed model API for the pilot and route eligible low-risk work to "
-            "gpt-4o-mini. Preserve human review for high-risk or ambiguous cases. "
-            "Defer GPU self-hosting at current modeled traffic.",
+            "Use the managed API for a small pilot; keep high-risk/uncertain cases on human review. "
+            "NO-GO for autonomous clinical decisions or production 10x until budget, current rates, "
+            "latency, and safety gates are evidenced. The runnable local agent is a deterministic "
+            "clinic-catalog fallback, not a live model call.",
             styles["Compact"],
         ),
         Paragraph("Monthly cost scenarios", styles["Section"]),
@@ -113,35 +114,35 @@ def build_pdf() -> None:
             table,
             Spacer(1, 5),
             Paragraph(
-                "Token spend is $0.17901/1,000 at 450 input + 180 output tokens and a 2% retry "
-                "allowance. Infrastructure and people/ops are disclosed planning allocations, "
-                "not quotes. Verify current OpenRouter rates before budgeting.",
+                    "At 10x, $979.01 leaves only $20.99 under the proposed $1,000 monthly alert budget. "
+                    "Costs assume 450 input + 180 output tokens and 2% retries; platform and staff "
+                    "allocations are planning estimates, not quotes. Verify current API prices.",
                 styles["Compact"],
             ),
             Paragraph("Operating controls", styles["Section"]),
             Paragraph(
-                "<b>Cache:</b> 5/8 public FAQ fixture requests hit (62.5%); five-minute TTL; "
-                "patient-specific answers are not cached. &nbsp; <b>Batch:</b> 7 mock offline "
-                "jobs grouped into 2 local batches; no provider discount claimed.",
+                "<b>Cache:</b> 5/8 public FAQ fixtures hit (62.5%); estimated token cost fell "
+                "<b>Cache:</b> 5/8 sample public questions were served from cache (62.5%); "
+                "estimated token cost fell from $0.17901 to $0.06713 per 1,000. Cached answers "
+                "expire after five minutes; never cache patient-specific triage. Fixture matches "
+                "are not clinical quality evidence. &nbsp; <b>Batch:</b> 7 offline jobs grouped "
+                "into 2 work groups (71.4% fewer); no bulk-pricing discount or throughput gain "
+                "claimed.",
                 styles["Compact"],
             ),
             Paragraph(
-                "<b>Budget:</b> proposed $1,000 monthly alert cap with 80%/100% actual and "
-                "100% forecast notices; alerts do not stop spend. Apply cost-center, environment, "
-                "and workload tags. Bound autoscaling by quotas; use capped retries and a circuit "
-                "breaker. Local Compose and written Azure/AWS configs are the fallback; no paid "
-                "cloud, GPU, Redis, Kubernetes, or live load test is claimed.",
+                "<b>Main risk:</b> a traffic/retry spike can exceed budget and slow service. Mitigate "
+                "with alerts at $800 actual, $1,000 actual, and $1,000 forecast; cost tags; capped "
+                "retries/concurrency; automatic stopping after repeated provider failures; and human review. These alerts notify operators; "
+                "No paid cloud, Redis, GPU, or live 10x test is claimed.",
                 styles["Compact"],
             ),
             Paragraph("Trade-off and decision gate", styles["Section"]),
             Paragraph(
-                "Managed API avoids fixed serving capacity and model operations, but retains "
-                "provider price, quota, and availability exposure. The illustrative self-host "
-                "break-even is about 15.25M requests/month ($1/hour GPU plus 40 operations "
-                "hours/month); it is not a procurement result. Serverless cold starts and "
-                "prompt/model A/B changes must meet p95 and quality gates. Quantization, pruning, "
-                "and KV-cache tuning are self-host levers, not API savings. Validate current "
-                "rates, throughput, retries, and quality at controlled 10x.",
+                "Pilot gate: keep interactive p95 under 2 seconds (p95 = 95 of 100 requests "
+                "finish within 2s), verify live rates, and pass controlled load and safety-quality "
+                "checks before traffic expansion. Pause on projected budget breach or SLO/quality "
+                "failure. Keep the local Compose/fixture fallback available.",
                 styles["Compact"],
             ),
         ]
