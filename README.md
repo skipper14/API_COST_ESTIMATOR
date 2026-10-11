@@ -75,7 +75,6 @@ requests finish within the stated time.
 - [x] GPU unavailable/not used; no quantization smoke test claimed.
 - [x] Paid cloud unavailable/not used; local Compose plus Azure/AWS budget configs.
 - [x] Live model API/load tests not run; deterministic fixtures avoid paid calls.
-- [x] Single-repository evidence index: [terminal evidence](evidence/deliverable_evidence.md).
 
 ## Checklist
 
