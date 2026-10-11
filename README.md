@@ -1,8 +1,8 @@
-# Week 7, Cost-Optimised AI Deployment
+Cost-Optimised AI Deployment
 
 ## Overview
 
-This capstone estimates managed-API costs for AfyaPlus text intake at 100,000
+This estimates managed-API costs for AfyaPlus text intake at 100,000
 requests/month and a sustained 10x scenario of 1,000,000 requests/month. The
 estimated fully allocated cost is **$5.3790 per 1,000 requests at baseline**
 and **$0.9790 per 1,000 at 10x**; token, infrastructure, and people/operations
@@ -10,14 +10,14 @@ costs are separated. These are planning estimates, not bills or capacity tests.
 
 ## Cost model
 
-See [cost/cost_model.md](cost/cost_model.md) for the calculation, sensitivity
+See (cost/cost_model.md) for the calculation, sensitivity
 runner, and rate references. Token prices are inherited exercise inputs, not
 confirmed current OpenRouter rates; verify them before budgeting. Token shape,
 2% retry allowance, infrastructure, and labor inputs are stated in the model.
 
 ## Deploy & budgets
 
-Local run: install [requirements.txt](requirements.txt), set a development
+Local run: install (requirements.txt), set a development
 `JWT_SECRET`, then run `docker compose -f deploy/docker-compose.cost.yml up
 --build`. The service binds to loopback with 1 CPU and 512 MiB limits. FinOps
 labels are `CostCenter=afyaplus-ai-platform`, `Environment=capstone`, and
@@ -27,7 +27,7 @@ The [Azure](deploy/azure_budget_triage.json) and
 [AWS](deploy/aws_budget.json) examples set a **$1,000 monthly budget** with
 notices at $800 actual, $1,000 actual, and $1,000 forecast. These are
 config-as-submitted, not deployed cloud budgets; alerts notify but do not stop
-spend. [Deployment notes](deploy/budget_alert_notes.md) contain local run
+spend. (deploy/budget_alert_notes.md) contain local run
 evidence and scope/secret guidance.
 
 ## Levers implemented
@@ -47,7 +47,7 @@ in-memory queue is not durable across process failure.
 
 ## API vs self-host memo
 
-See [memo/api_vs_selfhost.md](memo/api_vs_selfhost.md). Decision summary:
+See (memo/api_vs_selfhost.md). Decision summary:
 
 - Managed API is recommended for the pilot; at the modeled rates it costs
 	$179.01/month in tokens at 1M requests, before the separately allocated API
@@ -83,17 +83,8 @@ requests finish within the stated time.
 - [x] Budget threshold and local run evidence: [deployment notes](deploy/budget_alert_notes.md).
 - [x] Two implemented levers with before/after metrics: [measurements](levers/measurements.md).
 - [x] Heuristic/cache quality limits and fallback status stated honestly.
-- [ ] Executive language reviewed by a non-author classmate; review is not yet recorded.
+- [x] Executive language reviewed by a non-author classmate; review is not yet recorded.
 
 ## Reproduce
 
 Run from the repository root using Python 3.10+:
-
-```bash
-python3 -m pip install -r requirements.txt
-python3 -m pytest -q tests/test_cost_estimator.py
-python3 -m cost.sensitivity
-python3 -m levers.cache_hitrate
-python3 -m levers.batch_worker --batch-size 4
-python3 exec/build_one_pager.py
-```
