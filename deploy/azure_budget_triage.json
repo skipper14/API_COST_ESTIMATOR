@@ -1,0 +1,68 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "budgetName": {
+      "type": "string",
+      "defaultValue": "afyaplus-ai-monthly-usd"
+    },
+    "monthlyBudgetUsd": {
+      "type": "number",
+      "defaultValue": 1000
+    },
+    "costOwnerEmail": {
+      "type": "string",
+      "defaultValue": "replace-with-cost-owner@example.org"
+    }
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Consumption/budgets",
+      "apiVersion": "2023-05-01",
+      "name": "[parameters('budgetName')]",
+      "tags": {
+        "CostCenter": "afyaplus-ai-platform",
+        "Environment": "capstone",
+        "Workload": "triage-api"
+      },
+      "properties": {
+        "category": "Cost",
+        "amount": "[parameters('monthlyBudgetUsd')]",
+        "timeGrain": "Monthly",
+        "timePeriod": {
+          "startDate": "2026-10-01T00:00:00Z",
+          "endDate": "2027-10-01T00:00:00Z"
+        },
+        "notifications": {
+          "Actual80Percent": {
+            "enabled": true,
+            "operator": "GreaterThan",
+            "threshold": 80,
+            "thresholdType": "Actual",
+            "contactEmails": [
+              "[parameters('costOwnerEmail')]"
+            ]
+          },
+          "Actual100Percent": {
+            "enabled": true,
+            "operator": "GreaterThan",
+            "threshold": 100,
+            "thresholdType": "Actual",
+            "contactEmails": [
+              "[parameters('costOwnerEmail')]"
+            ]
+          },
+          "Forecast100Percent": {
+            "enabled": true,
+            "operator": "GreaterThan",
+            "threshold": 100,
+            "thresholdType": "Forecasted",
+            "contactEmails": [
+              "[parameters('costOwnerEmail')]"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

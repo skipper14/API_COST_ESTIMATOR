@@ -1,0 +1,16 @@
+services:
+  api:
+    build:
+      context: ../api
+      dockerfile: Dockerfile
+    image: afyaplus-week7-api:local
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?Set JWT_SECRET before starting the local API}
+    cpus: 1.0
+    mem_limit: 512m
+    labels:
+      com.afyaplus.cost-center: ai-platform
+      com.afyaplus.environment: local-capstone
+      com.afyaplus.workload: interactive-api

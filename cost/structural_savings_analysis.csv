@@ -1,0 +1,4 @@
+feature,mini_cost_per_request,gpt4o_cost_per_request,savings_per_request,quality_gap,recommended_model
+symptom_triage,0.0001755,0.002925,0.00275,0.3,gpt-4o-mini
+medication_guidance,0.000237,0.00395,0.00371,0.6,gpt-4o-mini
+appointment_routing,0.0001005,0.001675,0.00157,0.3,gpt-4o-mini

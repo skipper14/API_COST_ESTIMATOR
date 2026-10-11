@@ -1,0 +1,64 @@
+{
+  "Budget": {
+    "BudgetName": "AfyaplusAiMonthlyUsd",
+    "BudgetLimit": {
+      "Amount": "1000",
+      "Unit": "USD"
+    },
+    "TimeUnit": "MONTHLY",
+    "BudgetType": "COST",
+    "CostTypes": {
+      "IncludeTax": true,
+      "IncludeSubscription": true
+    },
+    "CostFilters": {
+      "TagKeyValue": [
+        "user:CostCenter$afyaplus-ai-platform"
+      ]
+    }
+  },
+  "NotificationsWithSubscribers": [
+    {
+      "Notification": {
+        "NotificationType": "ACTUAL",
+        "ComparisonOperator": "GREATER_THAN",
+        "Threshold": 80,
+        "ThresholdType": "PERCENTAGE"
+      },
+      "Subscribers": [
+        {
+          "SubscriptionType": "EMAIL",
+          "Address": "replace-with-cost-owner@example.org"
+        }
+      ]
+    },
+    {
+      "Notification": {
+        "NotificationType": "ACTUAL",
+        "ComparisonOperator": "GREATER_THAN",
+        "Threshold": 100,
+        "ThresholdType": "PERCENTAGE"
+      },
+      "Subscribers": [
+        {
+          "SubscriptionType": "EMAIL",
+          "Address": "replace-with-cost-owner@example.org"
+        }
+      ]
+    },
+    {
+      "Notification": {
+        "NotificationType": "FORECASTED",
+        "ComparisonOperator": "GREATER_THAN",
+        "Threshold": 100,
+        "ThresholdType": "PERCENTAGE"
+      },
+      "Subscribers": [
+        {
+          "SubscriptionType": "EMAIL",
+          "Address": "replace-with-cost-owner@example.org"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+fastapi
+uvicorn[standard]
+pydantic
+PyJWT
+bcrypt
+pytest
+httpx
+mcp
+langchain
