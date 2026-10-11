@@ -78,3 +78,13 @@ triage. The mock worker groups seven offline jobs into two batches and does not
 claim a provider batch discount or production throughput. See the measurements
 and decision memo for limitations, SLO gates, security, quotas, cold starts,
 observability, retries, and optimization trade-offs.
+
+## Local deployment evidence
+
+On 2026-10-11 the Compose image built successfully; the container became
+healthy on `127.0.0.1:8000` with a 1 CPU quota and 512 MiB memory limit. Python
+checks returned `GET /health: 200` and an authenticated `POST /agent/ask: 200`
+using the local clinic catalog. The endpoint is a deterministic MCP-backed
+fallback, not a live OpenRouter model call. Docker labels match the cloud
+`CostCenter`, `Environment`, and `Workload` tags. Full commands and response
+evidence are in [deploy/budget_alert_notes.md](deploy/budget_alert_notes.md).

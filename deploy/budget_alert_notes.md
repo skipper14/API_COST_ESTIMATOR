@@ -34,3 +34,31 @@ The local Compose file builds the unchanged Week 6 API, binds only to loopback,
 and declares CPU, memory, and cost-identification labels. It does not include
 Redis, a GPU, autoscaling, or a production OpenRouter call. A container limit
 protects local resource use; it is not an autoscaling policy.
+
+## Local Run Evidence
+
+Validated locally on 2026-10-11; no paid cloud resource or model-provider call
+was used.
+
+```bash
+export JWT_SECRET='replace-with-a-local-development-secret'
+docker compose -p afya-cost -f deploy/docker-compose.cost.yml up --detach --build
+python3 -c "import urllib.request; print(urllib.request.urlopen('http://127.0.0.1:8000/health').read().decode())"
+docker compose -p afya-cost -f deploy/docker-compose.cost.yml ps
+docker compose -p afya-cost -f deploy/docker-compose.cost.yml down
+```
+
+Observed: image build succeeded; Compose reported the API container `healthy`
+on `127.0.0.1:8000`; the health endpoint returned
+`{"service":"AfyaPlus E-commerce Fulfilment API","version":"1.0.0","status":"ok"}`.
+An authenticated Python request to `POST /agent/ask` returned HTTP 200 with a
+grounded clinic-catalog answer and the two MCP tools in its trace. This is a
+deterministic local agent fixture, not a live OpenRouter LLM integration.
+
+Docker inspection confirmed a 1 CPU quota, 536,870,912-byte memory limit, and
+the labels `com.afyaplus.cost-center=afyaplus-ai-platform`,
+`com.afyaplus.environment=capstone`, and
+`com.afyaplus.workload=triage-api`. These match the budget tag/filter values.
+The Azure/AWS alerts are config-as-submitted only: $1,000/month with alerts at
+$800 actual, $1,000 actual, and a forecast above $1,000. No cloud alert was
+deployed or triggered.

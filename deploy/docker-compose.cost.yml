@@ -11,6 +11,6 @@ services:
     cpus: 1.0
     mem_limit: 512m
     labels:
-      com.afyaplus.cost-center: ai-platform
-      com.afyaplus.environment: local-capstone
-      com.afyaplus.workload: interactive-api
+      com.afyaplus.cost-center: afyaplus-ai-platform
+      com.afyaplus.environment: capstone
+      com.afyaplus.workload: triage-api
