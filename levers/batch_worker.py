@@ -1,6 +1,7 @@
 """Offline batch worker fixture for non-interactive routing jobs."""
 
 import argparse
+from collections import deque
 import json
 from pathlib import Path
 import sys
@@ -28,9 +29,13 @@ def process_jobs(jobs: list[dict[str, Any]], batch_size: int) -> list[dict[str, 
     if batch_size < 1:
         raise ValueError("batch_size must be at least one")
     results = []
-    for start in range(0, len(jobs), batch_size):
-        batch_number = start // batch_size + 1
-        for job in jobs[start : start + batch_size]:
+    job_queue = deque(jobs)
+    batch_number = 0
+    while job_queue:
+        batch_number += 1
+        batch_length = min(batch_size, len(job_queue))
+        batch = [job_queue.popleft() for _ in range(batch_length)]
+        for job in batch:
             if not job.get("job_id") or job.get("urgency") not in {
                 "routine",
                 "review",
@@ -62,9 +67,11 @@ def main() -> None:
         args.output.write_text(output, encoding="utf-8")
     else:
         print(output, end="")
+    batch_count = (len(results) + args.batch_size - 1) // args.batch_size
+    group_reduction = 1 - (batch_count / len(results)) if results else 0
     print(
-        f"processed={len(results)} batches={(len(results) + args.batch_size - 1) // args.batch_size} "
-        "mode=fixture-no-model-calls",
+        f"jobs={len(results)} groups_before={len(results)} groups_after={batch_count} "
+        f"grouping_reduction={group_reduction:.1%} mode=local-fixture-no-provider-calls",
         file=sys.stderr,
     )
 

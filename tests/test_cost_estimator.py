@@ -3,6 +3,7 @@ import pytest
 from cost.cost_model import cost_per_request
 from cost.sensitivity import SCENARIOS, estimate
 from levers.batch_worker import FIXTURE_JOBS, process_jobs
+from levers.cache_hitrate import replay
 from levers.cache_triage import PUBLIC_FAQ, PublicReferenceCache
 
 
@@ -38,9 +39,21 @@ def test_public_reference_cache_expires_and_rejects_free_text() -> None:
         cache.put("patient symptoms and phone number", "not cached")
 
 
+def test_cache_replay_reports_cost_and_fixture_quality_honestly() -> None:
+    metrics = replay()
+
+    assert metrics["hit_rate"] == pytest.approx(0.625)
+    assert metrics["estimated_model_requests_before"] == 8
+    assert metrics["estimated_model_requests_after"] == 3
+    assert metrics["fixture_source_agreement"] == 1.0
+    assert metrics["model_cost_before_usd_per_1k"] == pytest.approx(0.17901)
+    assert metrics["model_cost_after_usd_per_1k"] == pytest.approx(0.06712875)
+
+
 def test_batch_worker_groups_jobs_without_model_calls() -> None:
     results = process_jobs(FIXTURE_JOBS, batch_size=4)
 
     assert len(results) == 7
     assert {result["batch_number"] for result in results} == {"1", "2"}
     assert results[3]["result"] == "human_review"
+    assert [result["job_id"] for result in results] == [job["job_id"] for job in FIXTURE_JOBS]

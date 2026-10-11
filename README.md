@@ -72,12 +72,12 @@ $1,000/month cap, not deployed budgets. Replace contact placeholders and
 confirm scope before applying them. Alerts do not stop spend automatically.
 
 No paid cloud account, Redis, GPU, Kubernetes cluster, live load test, or live
-OpenRouter call is claimed. Cache evidence is limited to eight public FAQ
-fixtures (5 hits, 62.5%); it must not be generalized to patient-specific
-triage. The mock worker groups seven offline jobs into two batches and does not
-claim a provider batch discount or production throughput. See the measurements
-and decision memo for limitations, SLO gates, security, quotas, cold starts,
-observability, retries, and optimization trade-offs.
+OpenRouter call is claimed. The eight-query public FAQ fixture replay yielded
+5 cache hits (62.5%), estimated token spend of $0.17901 to $0.06712875 per
+1,000, and 8/8 exact fixture-source matches. This is not clinical quality
+evidence. The in-memory queue grouped 7 jobs into 2 local batches (71.4% fewer
+groups), with no provider calls or batch discount claimed. See the detailed
+[measurements](levers/measurements.md) for limitations and quality notes.
 
 ## Local deployment evidence
 
