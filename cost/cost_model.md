@@ -20,10 +20,15 @@ variable and remains approximately linear with volume.
 
 ## Inputs and rates
 
-- Rates used: $0.15 per 1M input tokens and $0.60 per 1M output tokens for
-  `gpt-4o-mini`; $2.50 and $10.00 per 1M respectively for `gpt-4o`. These are
-  inherited exercise inputs, not independently verified current OpenRouter
-  rates. Confirm the routed model price before budgeting or quoting [1].
+- Rate snapshot checked 2026-10-11 in OpenRouter's public model catalog [1]:
+  `gpt-4o-mini` is $0.15 per 1M input tokens and $0.60 per 1M output tokens;
+  `gpt-4o` is $2.50 and $10.00 per 1M respectively. The mini route lists cached
+  input at $0.075 per 1M. Full [rate snapshot](provider_rate_snapshot.md).
+  Recheck before a budget or quote because prices can change.
+- OpenRouter also lists `openai/gpt-4o-mini:batch` at $0.075 per 1M input and
+  $0.30 per 1M output tokens. This lower rate is not included in the primary
+  estimate: the eligible asynchronous traffic share is unknown and the local
+  batch worker does not call the provider Batch API.
 - Baseline message shape: 450 input tokens and 180 output tokens. The 10x
   scenario holds that average constant; a high-token sensitivity uses 900 input
   and 300 output tokens.
@@ -33,8 +38,9 @@ variable and remains approximately linear with volume.
 - Baseline traffic: 100,000 requests/month. The spike is 1,000,000 requests
   sustained over one month.
 - Infrastructure allocation: $120/month baseline and $300/month at the spike,
-  including an estimated API host, logs, and network costs. Replace with a
-  selected-region cloud quote or measured bill.
+  including an estimated API host, logs, and network costs. These are explicit
+  scenario inputs, not independently priced line items; replace them with a
+  selected-region cloud quote or measured bill before approval.
 - People/ops allocation: $400/month baseline and $500/month at the spike,
   modeled as 8 and 10 hours at $50/hour fully loaded. Replace with actual
   staffing and labor rates.
@@ -94,7 +100,6 @@ work; this cost model alone does not establish capacity.
 
 ## Rate reference
 
-1. OpenRouter model page: <https://openrouter.ai/openai/gpt-4o-mini>. The page
-   identifies the routed model but did not expose a numeric rate in the captured
-   documentation. Rates above are inherited from the repository exercise and
-   remain unverified assumptions; record a dated pricing capture when refreshed.
+1. OpenRouter public model catalog: <https://openrouter.ai/api/v1/models>,
+   retrieved 2026-10-11. Exact model IDs and the catalog's prompt/completion
+   rates are transcribed in [provider_rate_snapshot.md](provider_rate_snapshot.md).

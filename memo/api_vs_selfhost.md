@@ -33,7 +33,7 @@ the self-host figure below is only the incremental model-serving floor.
 | Input | Explicit assumption |
 | --- | ---: |
 | Average request | 450 input + 180 output tokens |
-| Exercise token rates | $0.15 / 1M input; $0.60 / 1M output |
+| OpenRouter catalog rates (checked 2026-10-11) | $0.15 / 1M input; $0.60 / 1M output |
 | Billed retry allowance | 2% additional attempts with same token shape |
 | API variable cost | $0.00017901/request, or $0.17901/1,000 |
 | GPU rental sensitivity | $1/hour x 730 hours = $730/month; not a quote |
@@ -53,8 +53,14 @@ Raw crossover    = $2,730 / $0.00017901
 | 1,000,000 | $179.01 | $2,730 | API clearly lower |
 | 15,250,000 | about $2,729.90 | $2,730 | Raw crossover only; self-host omitted costs move it higher |
 
-The rates are inherited exercise inputs, not independently confirmed current
-OpenRouter rates; see the [cost model](../cost/cost_model.md) for provenance.
+The standard-route token prices are from the dated OpenRouter public-catalog
+snapshot in the [cost model](../cost/cost_model.md). OpenRouter also lists a
+`gpt-4o-mini:batch` rate at
+half the standard input/output price. If every request in this comparison were
+batch eligible, the simple crossover against token spend would be about 30.5M
+requests/month instead of 15.25M. That is an upper-bound sensitivity, not the
+primary result: the asynchronous eligibility share is unknown and this local
+worker does not submit provider batch jobs.
 The $1/hour GPU and labor assumptions are sensitivities, not
 vendor pricing, measured utilization, or a claim that one GPU can serve this
 volume at the required latency. The calculation excludes GPU replicas or
